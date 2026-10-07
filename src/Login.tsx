@@ -1,0 +1,5 @@
+import React,{useState}from'react';
+import{KeyRound}from'lucide-react';
+import{supabase}from'./supabase';
+
+export function Login(){const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[loading,setLoading]=useState(false);const[error,setError]=useState('');const submit=async(e:React.FormEvent)=>{e.preventDefault();setLoading(true);setError('');const{error}=await supabase.auth.signInWithPassword({email,password});if(error)setError('No se pudo iniciar sesión. Revisá email y contraseña.');setLoading(false)};return <div className="login-page"><form className="login-card" onSubmit={submit}><div className="login-icon"><KeyRound/></div><h1>LLAVE 360</h1><p>Administración</p><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username"/></label><label>Contraseña<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label>{error&&<div className="login-error">{error}</div>}<button className="primary" type="submit" disabled={loading}>{loading?'Ingresando…':'Ingresar'}</button></form></div>}

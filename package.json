@@ -14,7 +14,8 @@
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "latest",
-    "jspdf": "latest"
+    "jspdf": "latest",
+    "@supabase/supabase-js": "latest"
   },
   "devDependencies": {}
 }

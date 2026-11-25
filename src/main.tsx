@@ -1,12 +1,12 @@
 import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import{jsPDF}from'jspdf';
-import{LayoutDashboard,Inbox,Store,Package,ReceiptText,Settings,Plus,Search,Pencil,FileDown,CheckCircle2,Clock3,XCircle,LogOut}from'lucide-react';
+import{LayoutDashboard,Inbox,Store,Package,ReceiptText,Settings,Plus,Search,Pencil,Trash2,FileDown,CheckCircle2,Clock3,XCircle,LogOut}from'lucide-react';
 import{ProductEditor,type Product,type Business}from'./ProductEditor';
 import{BusinessEditor}from'./BusinessEditor';
 import{Login}from'./Login';
 import{supabase}from'./supabase';
-import{loadBusinesses,loadProducts,loadRequests,updateRequestStatus,saveBusinessDb,saveProductDb}from'./db';
+import{loadBusinesses,loadProducts,loadRequests,updateRequestStatus,saveBusinessDb,saveProductDb,deleteBusinessDb,deleteProductDb}from'./db';
 import'./styles.css';
 
 type Status='Nueva'|'Contactado'|'Finalizada';
@@ -145,6 +145,37 @@ function App(){
       setDbError(
         e.message||
         'No se pudo guardar el producto.'
+      );
+    }
+  };
+
+  const deleteBusiness=async(b:Business)=>{
+    if(!window.confirm(`¿Eliminar el negocio "${b.name}"? Esta acción no se puede deshacer.`))return;
+
+    try{
+      setDbError('');
+      await deleteBusinessDb(b.id);
+      setBusinesses(v=>v.filter(x=>x.id!==b.id));
+      if(filter===b.id)setFilter(0);
+    }catch(e:any){
+      setDbError(
+        e.message||
+        'No se pudo eliminar el negocio.'
+      );
+    }
+  };
+
+  const deleteProduct=async(p:Product)=>{
+    if(!window.confirm(`¿Eliminar el producto "${p.name}"? Esta acción no se puede deshacer.`))return;
+
+    try{
+      setDbError('');
+      await deleteProductDb(p.id);
+      setProducts(v=>v.filter(x=>x.id!==p.id));
+    }catch(e:any){
+      setDbError(
+        e.message||
+        'No se pudo eliminar el producto.'
       );
     }
   };
@@ -527,14 +558,23 @@ function App(){
                     }
                   </span>
 
-                  <button
-                    onClick={()=>
-                      setEditingBusiness({...b})
-                    }
-                  >
-                    <Pencil size={16}/>
-                    {' '}Editar
-                  </button>
+                  <div className="card-actions">
+                    <button
+                      onClick={()=>
+                        setEditingBusiness({...b})
+                      }
+                    >
+                      <Pencil size={16}/>
+                      Editar
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={()=>deleteBusiness(b)}
+                    >
+                      <Trash2 size={16}/>
+                      Eliminar
+                    </button>
+                  </div>
 
                 </article>
               )}
@@ -656,14 +696,23 @@ function App(){
 
                   </div>
 
-                  <button
-                    onClick={()=>
-                      setEditing({...p})
-                    }
-                  >
-                    <Pencil size={16}/>
-                    Editar
-                  </button>
+                  <div className="product-actions">
+                    <button
+                      onClick={()=>
+                        setEditing({...p})
+                      }
+                    >
+                      <Pencil size={16}/>
+                      Editar
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={()=>deleteProduct(p)}
+                    >
+                      <Trash2 size={16}/>
+                      Eliminar
+                    </button>
+                  </div>
 
                 </article>
               )}

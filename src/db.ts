@@ -243,3 +243,63 @@ export async function saveProductDb(p:Product){
 
   return productFromRow(data);
 }
+
+export async function deleteProductDb(id:number){
+  const{data:linkedItems,error:referenceError}=await supabase
+    .from('request_items')
+    .select('id')
+    .eq('product_id',id)
+    .limit(1);
+
+  if(referenceError)throw referenceError;
+
+  if(linkedItems?.length){
+    throw new Error(
+      'No se puede eliminar este producto porque aparece en solicitudes. Desactivalo para ocultarlo y conservar el historial.'
+    );
+  }
+
+  const{error}=await supabase
+    .from('products')
+    .delete()
+    .eq('id',id);
+
+  if(error)throw error;
+}
+
+export async function deleteBusinessDb(id:number){
+  const[productsResult,requestsResult]=await Promise.all([
+    supabase
+      .from('products')
+      .select('id')
+      .eq('business_id',id)
+      .limit(1),
+    supabase
+      .from('requests')
+      .select('id')
+      .eq('business_id',id)
+      .limit(1)
+  ]);
+
+  if(productsResult.error)throw productsResult.error;
+  if(requestsResult.error)throw requestsResult.error;
+
+  if(productsResult.data?.length){
+    throw new Error(
+      'No se puede eliminar este negocio porque tiene productos asociados. Eliminá primero sus productos.'
+    );
+  }
+
+  if(requestsResult.data?.length){
+    throw new Error(
+      'No se puede eliminar este negocio porque tiene solicitudes asociadas. Desactivalo para conservar el historial.'
+    );
+  }
+
+  const{error}=await supabase
+    .from('businesses')
+    .delete()
+    .eq('id',id);
+
+  if(error)throw error;
+}
